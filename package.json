@@ -8,6 +8,7 @@
   },
   "devDependencies": {},
   "scripts": {
+    "start": "node track.js",
     "test": "make test"
   },
   "repository": {
