@@ -1,0 +1,23 @@
+{
+  "name": "pokepooch",
+  "version": "1.0.0",
+  "description": "Pokemon go tracker",
+  "main": "track.js",
+  "dependencies": {
+    "pokemon-go-node-api": "github:armax/Pokemon-GO-node-api"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tivoli/poketracker.git"
+  },
+  "author": "Jonathan 'Tivs' Rainey",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Tivoli/poketracker/issues"
+  },
+  "homepage": "https://github.com/Tivoli/poketracker#readme"
+}
