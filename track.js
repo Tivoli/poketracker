@@ -2,7 +2,6 @@ const readline = require('readline');
 const {Pokeio} = require('pokemon-go-node-api');
 const pgo = new Pokeio();
 const baseStats = require('./baseStats');
-const [,,filterName] = process.argv;
 
 let location, provider, username, password, pokemon;
 
