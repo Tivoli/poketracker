@@ -1,7 +1,7 @@
 const readline = require('readline');
 const {PTCLogin, Client, GoogleLogin} = require('pogobuf');
 const client = new Client();
-const geocoder = require('node-geocoder')();
+const geocoder = require('node-geocoder')({provider: 'google'});
 const baseStats = require('./baseStats');
 const pokedex = require('./pokedex');
 
@@ -37,13 +37,7 @@ rl.on('close', () => {
 
 function askLocation() {
   return new Promise((resolve) => {
-    rl.question('What is your location? ', (answer) => {
-      location = {
-        type: 'name',
-        name: answer,
-      }
-      resolve(answer);
-    })
+    rl.question('What is your location? ', (answer) => { location = answer; resolve(answer); })
   });
 }
 
@@ -68,13 +62,12 @@ function askPassword() {
 function init() {
   const {login} = provider === 'ptc' ? new PTCLogin() : new GoogleLogin();
   return Promise.all([
-    // geocoder.geocode(location),
+    geocoder.geocode(location),
     login(username, password),
   ]).then((res) => {
-    const [token] = res;
-    // console.info(geolocation);
-    // const {latitude, longitude} = geolocation[0];
-    // client.setPosition(latitude, longitude);
+    const [geolocation, token] = res;
+    const {latitude, longitude} = geolocation[0];
+    client.setPosition(latitude, longitude);
     client.setAuthInfo(provider, token);
     return client.init();
   });
