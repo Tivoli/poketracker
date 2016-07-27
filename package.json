@@ -4,7 +4,8 @@
   "description": "Pokemon go tracker",
   "main": "track.js",
   "dependencies": {
-    "pokemon-go-node-api": "github:armax/Pokemon-GO-node-api"
+    "node-geocoder": "^3.13.1",
+    "pogobuf": "^1.1.0"
   },
   "devDependencies": {},
   "scripts": {

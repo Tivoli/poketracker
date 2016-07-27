@@ -1,9 +1,11 @@
 const readline = require('readline');
-const {Pokeio} = require('pokemon-go-node-api');
-const pgo = new Pokeio();
+const {PTCLogin, Client, GoogleLogin} = require('pogobuf');
+const client = new Client();
+const geocoder = require('node-geocoder')();
 const baseStats = require('./baseStats');
+const pokedex = require('./pokedex');
 
-let location, provider, username, password, pokemon;
+let location, provider, username, password;
 
 function convertIV(id, stam, atk, def, multiplier) {
   const {BaseStamina, BaseAttack, BaseDefense} = baseStats.find((b) => b.id === id);
@@ -63,25 +65,26 @@ function askPassword() {
   });
 }
 
-function pgoInit() {
-  return new Promise((resolve, reject) => {
-    pgo.init(username, password, location, provider, function(err) {
-      err ? reject(err) : resolve(pgo);
-    });
+function init() {
+  const {login} = provider === 'ptc' ? new PTCLogin() : new GoogleLogin();
+  return Promise.all([
+    // geocoder.geocode(location),
+    login(username, password),
+  ]).then((res) => {
+    const [token] = res;
+    // console.info(geolocation);
+    // const {latitude, longitude} = geolocation[0];
+    // client.setPosition(latitude, longitude);
+    client.setAuthInfo(provider, token);
+    return client.init();
   });
 }
 
 function fetchPokemon() {
-  return new Promise((resolve, reject) => {
-    pgo.GetInventory((err, res) => {
-      if (err) reject(err);
-      if (res.inventory_delta && res.inventory_delta.inventory_items) {
-        const filtered = res.inventory_delta.inventory_items.filter((item) => {
-          return item.inventory_item_data.pokemon && item.inventory_item_data.pokemon.pokemon_id;
-        });
-        resolve(filtered.map((item) => { return item.inventory_item_data.pokemon; }));
-      }
-    });
+  return client.getInventory(0).then((res) => {
+    return res.inventory_delta.inventory_items.filter((item) => {
+      return item.inventory_item_data.pokemon_data && item.inventory_item_data.pokemon_data.pokemon_id;
+    }).map((item) => { return item.inventory_item_data.pokemon_data; });
   });
 }
 
@@ -89,7 +92,7 @@ askLocation()
   .then(askProvider)
   .then(askUsername)
   .then(askPassword)
-  .then(pgoInit)
+  .then(init)
   .then(fetchPokemon)
   .then((pokemon) => {
     console.info(`You have ${pokemon.length} pokemon!`);
@@ -99,7 +102,7 @@ askLocation()
     rl.on('line', (line) => {
       if (/^\.(exit|close)/.test(line)) return rl.close();
       pokemon.forEach((mon) => {
-        const info = pgo.pokemonlist.find((p) => { return parseInt(p.id) === mon.pokemon_id; });
+        const info = pokedex.pokemon.find((p) => { return p.id === mon.pokemon_id; });
         const regex = new RegExp(`^${line}`, 'gi');
         if (regex.test(info.name)) {
           const {minCP, currCP, maxCP} = calculateCP(mon);
